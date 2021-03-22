@@ -24,7 +24,7 @@ export default {
   },
   computed: {
     showImage() {
-      return this.goodsItem.image || this.goodsItem.show.img
+      return this.goodsItem.img || this.goodsItem.image || this.goodsItem.show.img
     }
   },
   methods: {
@@ -49,8 +49,9 @@ export default {
 <style scoped>
 
   .goods-item {
-    /* position: relative; */
-    width: 48%;
+    position: relative;
+    padding-bottom: 40px;
+    /* width: 48%; */
   }
 
   .goods-item img {
@@ -60,7 +61,7 @@ export default {
 
   .goods-info {
     font-size: 12px;
-    /* position: absolute; */
+    position: absolute;
     bottom: 5px;
     left: 0;
     right: 0;

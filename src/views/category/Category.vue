@@ -1,142 +1,174 @@
 <template>
-  <div class="wrapper">
-    <ul class="content">
-    <li>商品列表1</li>
-    <li>商品列表2</li>
-    <li>商品列表3</li>
-    <li>商品列表4</li>
-    <li>商品列表5</li>
-    <li>商品列表6</li>
-    <li>商品列表7</li>
-    <li>商品列表8</li>
-    <li>商品列表9</li>
-    <li>商品列表10</li>
-    <li>商品列表11</li>
-    <li>商品列表12</li>
-    <li>商品列表13</li>
-    <li>商品列表14</li>
-    <li>商品列表15</li>
-    <li>商品列表16</li>
-    <li>商品列表17</li>
-    <li>商品列表18</li>
-    <li>商品列表19</li>
-    <li>商品列表20</li>
-    <li>商品列表21</li>
-    <li>商品列表22</li>
-    <li>商品列表23</li>
-    <li>商品列表24</li>
-    <li>商品列表25</li>
-    <li>商品列表26</li>
-    <li>商品列表27</li>
-    <li>商品列表28</li>
-    <li>商品列表29</li>
-    <li>商品列表30</li>
-    <li>商品列表31</li>
-    <li>商品列表32</li>
-    <li>商品列表33</li>
-    <li>商品列表34</li>
-    <li>商品列表35</li>
-    <li>商品列表36</li>
-    <li>商品列表37</li>
-    <li>商品列表38</li>
-    <li>商品列表39</li>
-    <li>商品列表40</li>
-    <li>商品列表41</li>
-    <li>商品列表42</li>
-    <li>商品列表43</li>
-    <li>商品列表44</li>
-    <li>商品列表45</li>
-    <li>商品列表46</li>
-    <li>商品列表47</li>
-    <li>商品列表48</li>
-    <li>商品列表49</li>
-    <li>商品列表50</li>
-    <li>商品列表51</li>
-    <li>商品列表52</li>
-    <li>商品列表53</li>
-    <li>商品列表54</li>
-    <li>商品列表55</li>
-    <li>商品列表56</li>
-    <li>商品列表57</li>
-    <li>商品列表58</li>
-    <li>商品列表59</li>
-    <li>商品列表60</li>
-    <li>商品列表61</li>
-    <li>商品列表62</li>
-    <li>商品列表63</li>
-    <li>商品列表64</li>
-    <li>商品列表65</li>
-    <li>商品列表66</li>
-    <li>商品列表67</li>
-    <li>商品列表68</li>
-    <li>商品列表69</li>
-    <li>商品列表70</li>
-    <li>商品列表71</li>
-    <li>商品列表72</li>
-    <li>商品列表73</li>
-    <li>商品列表74</li>
-    <li>商品列表75</li>
-    <li>商品列表76</li>
-    <li>商品列表77</li>
-    <li>商品列表78</li>
-    <li>商品列表79</li>
-    <li>商品列表80</li>
-    <li>商品列表81</li>
-    <li>商品列表82</li>
-    <li>商品列表83</li>
-    <li>商品列表84</li>
-    <li>商品列表85</li>
-    <li>商品列表86</li>
-    <li>商品列表87</li>
-    <li>商品列表88</li>
-    <li>商品列表89</li>
-    <li>商品列表90</li>
-    <li>商品列表91</li>
-    <li>商品列表92</li>
-    <li>商品列表93</li>
-    <li>商品列表94</li>
-    <li>商品列表95</li>
-    <li>商品列表96</li>
-    <li>商品列表97</li>
-    <li>商品列表98</li>
-    <li>商品列表99</li>
-    <li>商品列表100</li>
-    </ul>
+  <div id="category">
+    <nav-bar class="nav-bar">
+      <div slot="center">商品分类</div>
+    </nav-bar>
+
+    <div class="content">
+      <tab-menu :categories="categories" @selectItem="selectItem"></tab-menu>
+
+      <scroll id="tab-content" :data="[categoryData]">
+        <div>
+          <tab-content-category :subcategories="showSubcategory"></tab-content-category>
+          <tab-control :titles="['综合', '新品', '销量']" @tabClick="tabClick"></tab-control>
+          <tab-content-detail :category-detail="showCategoryDetail"/>
+        </div>
+      </scroll>
+    </div>
   </div>
- 
 </template>
 
 <script>
-import BScroll from 'better-scroll'
+import NavBar from 'components/common/navbar/NavBar.vue'
+import Scroll from 'components/common/scroll/Scroll.vue';
+import TabControl from 'components/content/tabControl/TabControl.vue';
+
+import TabMenu from './childComps/TabMenu.vue';
+import TabContentDetail from './childComps/TabContentDetail.vue';
+import TabContentCategory from './childComps/TabContentCategory.vue'
+
+import {getCategory, getSubcategory, getCategoryDetail} from "network/category";
 
 export default {
   name: "Category",
+    components: {
+      NavBar,
+      TabMenu,
+      Scroll,
+      TabControl,
+      TabContentDetail,
+      TabContentCategory,
+    },
   data() {
     return {
-      scroll: null
+      categories: [],
+      categoryData: {},
+      currentIndex: -1,
+      currentType: 'pop',
+    }
+  },
+  created() {
+    // 1.请求分类数据
+    this._getCategory()
+  },
+  computed: {
+    showSubcategory() {
+      if (this.currentIndex === -1) return {}
+      return this.categoryData[this.currentIndex].subcategories
+    },
+    showCategoryDetail() {
+      if (this.currentIndex === -1) return []
+      return this.categoryData[this.currentIndex].categoryDetail[this.currentType]
     }
   },
   mounted() {
-    this.scroll = new BScroll(document.querySelector('.wrapper'), {
-      probeType: 3,
-      pullUpLoad: true
-    }),
 
-    this.scroll.on('scroll', (position) => {
-      // console.log(position);
-    }),
+  },
+  methods: {
+    // 用于获取总分类数据，因为个别数据获取要经常用，为了方便封装成方法（或者封装外面也可以）
+    _getCategory() {
+      getCategory().then(res => {
+        // console.log(res);
+        // 1.获取分类数据（最外层）
+        this.categories = res.data.category.list
+        // 2.初始化每个类别的子数据
+        for (let i = 0; i < this.categories.length; i++) {
+          this.categoryData[i] = {
+            subcategories: {},
+            categoryDetail: {
+              'pop': [],
+              'new': [],
+              'sell': []
+            }
+          }
+        }
+        // 3.请求第一个分类的数据
+        this._getSubcategories(0)
+      })
+    },
 
-    this.scroll.on('pullingUp', () => {
-      console.log('加载');
-    })
+    // 用于获取左边分类确定以后，通过传index来获取当前次分类的数据（包括次分类下的三级分类与下面商品流）
+    _getSubcategories(index) {
+      // 获取index与maitKey
+      this.currentIndex = index;
+      const mailKey = this.categories[index].maitKey;
+      // 通过mailkey进行网络请求，获取次分类数据
+      getSubcategory(mailKey).then(res => {
+        // 保存信息
+        this.categoryData[index].subcategories = res.data
+        // 赋值解构
+        this.categoryData = {...this.categoryData}
+        this._getCategoryDetail('pop')
+        this._getCategoryDetail('sell')
+        this._getCategoryDetail('new')
+      })
+    },
+
+    // 获取商品流信息
+     _getCategoryDetail(type) {
+      // 1.获取请求的miniWallkey
+      const miniWallkey = this.categories[this.currentIndex].miniWallkey;
+      // 2.发送请求,传入miniWallkey和type
+      getCategoryDetail(miniWallkey, type).then(res => {
+        // console.log(res);
+        // 3.将获取的数据保存下来
+        this.categoryData[this.currentIndex].categoryDetail[type] = res
+        this.categoryData = {...this.categoryData}
+      })
+    },
+
+    /**
+     * 事件响应相关的方法
+     */
+    // 当用户点击左边次分类的时候，重新进行网络请求
+    selectItem(index) {
+      console.log('---');
+      this._getSubcategories(index)
+    },
+
+    tabClick(index) {
+      switch (index) {
+        case 0:
+          this.currentType = 'pop'
+          break
+        case 1:
+          this.currentType = 'new'
+          break
+        case 2:
+          this.currentType = 'sell'
+          break
+      }
+      console.log(this.currentType);
+    }
   }
 }
 </script>
 
 <style scoped>
-  .wrapper {
-    height: 150px;
-    background-color: #bfa;
+  #category {
+    height: 100vh;
+  }
+
+  .nav-bar {
+    background-color: var(--color-tint);
+    color: #fff;
+    font-weight: 700;
+  }
+  
+  .content {
+    /* position: absolute;
+    left: 0;
+    right: 0;
+    top: 44px;
+    bottom: 49px; */
+    height: calc(100% - 44px - 49px);
     overflow: hidden;
+
+    display: flex;
+  }
+
+  #tab-content {
+    height: 100%;
+    flex: 1;
   }
 </style>
